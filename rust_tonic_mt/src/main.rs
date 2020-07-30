@@ -1,3 +1,4 @@
+use jemallocator::Jemalloc;
 use tonic::{transport::Server, Request, Response, Status};
 
 use hello_world::greeter_server::{Greeter, GreeterServer};
@@ -9,6 +10,9 @@ pub mod hello_world {
 
 #[derive(Default)]
 pub struct MyGreeter {}
+
+#[global_allocator]
+static ALLOC: Jemalloc = Jemalloc;
 
 #[tonic::async_trait]
 impl Greeter for MyGreeter {

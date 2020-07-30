@@ -1,5 +1,6 @@
 use dotenv::dotenv;
 use log::info;
+use jemallocator::Jemalloc;
 use std::env;
 use thruster::context::hyper_request::HyperRequest;
 use thruster::{async_middleware, middleware_fn};
@@ -8,6 +9,9 @@ use thruster::{MiddlewareNext, MiddlewareResult};
 use thruster_grpc::context::{generate_context, ProtoContext as Ctx};
 use thruster_grpc::server::ProtoServer;
 use thruster_grpc::util::{context_to_message, message_to_context};
+
+#[global_allocator]
+static ALLOC: Jemalloc = Jemalloc;
 
 mod hello_world {
     include!(concat!(env!("OUT_DIR"), "/helloworld.rs"));
