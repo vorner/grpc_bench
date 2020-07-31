@@ -1,5 +1,7 @@
 #!/bin/sh
 
+set -ex
+
 NAME=$1
 REPORT_DIR=${2:-"results"}
 
@@ -10,7 +12,7 @@ echo "==> Running benchmark for ${NAME}..."
 
 mkdir -p "${REPORT_DIR}"
 
-docker run --name "${NAME}" --rm --cpus "${GRPC_SERVER_CPUS}" --network=host -d -t ${NAME}
+docker run --name "${NAME}" --rm --cpus "${GRPC_SERVER_CPUS}" -e "THREADS=${GRPC_SERVER_CPUS}" --network=host -d -t ${NAME}
 
 sleep 5
 

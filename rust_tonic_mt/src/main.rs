@@ -1,4 +1,5 @@
 use tonic::{transport::Server, Request, Response, Status};
+use tokio::runtime::Builder;
 
 use hello_world::greeter_server::{Greeter, GreeterServer};
 use hello_world::{HelloReply, HelloRequest};
@@ -23,8 +24,13 @@ impl Greeter for MyGreeter {
     }
 }
 
-#[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {
+fn guess_threads_env() -> Option<usize> {
+    let env = std::env::var("THREADS").ok()?;
+    let threads = env.parse().ok()?;
+    Some(threads)
+}
+
+async fn server() -> Result<(), Box<dyn std::error::Error>> {
     let addr = "0.0.0.0:50051".parse().unwrap();
     let greeter = MyGreeter::default();
 
@@ -34,6 +40,20 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .add_service(GreeterServer::new(greeter))
         .serve(addr)
         .await?;
+
+    Ok(())
+}
+
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let threads = guess_threads_env().unwrap_or_else(num_cpus::get);
+
+    let mut runtime = Builder::new()
+        .enable_all()
+        .threaded_scheduler()
+        .core_threads(threads)
+        .build()?;
+
+    runtime.block_on(server())?;
 
     Ok(())
 }
